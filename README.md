@@ -32,11 +32,11 @@ A comprehensive dashboard mockup for Square Yards' TCF KYC (Know Your Customer) 
 
 ## Pages
 
-- `index.html` - Landing page
-- `kyc-overview-mockup.html` - Main dashboard overview
+- `index.html` - Main dashboard overview (default page)
 - `kyc-calls-mockup.html` - Calls management interface
 - `kyc-relationship-managers-mockup.html` - RM analytics
 - `call-detail.html` - Individual call details
+- `landing.html` - Original landing page
 
 ## Technology Stack
 
