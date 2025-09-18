@@ -241,6 +241,31 @@
             font-weight: 600;
             color: white;
             margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+        }
+
+        /* Expand Icon */
+        .expand-icon {
+            display: inline-block;
+            margin-right: 12px;
+            font-size: 16px;
+            color: #64b5f6;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            width: 20px;
+            text-align: center;
+        }
+
+        .manager-item.expanded .expand-icon {
+            transform: rotate(180deg);
+            color: #ffffff;
+        }
+
+        .manager-item:hover .expand-icon {
+            color: #ffffff;
+            font-size: 18px;
         }
 
         .manager-details {
@@ -312,10 +337,45 @@
             padding: 20px 24px;
             background-color: #1e2139;
             border-top: 1px solid #2a2f45;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .manager-details-expanded.show {
             display: block;
+            opacity: 1;
+            max-height: 1000px;
+            animation: expandDetails 0.3s ease;
+        }
+
+        @keyframes expandDetails {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Enhanced Manager Item Interactions */
+        .manager-item {
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+
+        .manager-item:hover {
+            background-color: #1e2139;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
 
         .details-grid {
@@ -543,7 +603,10 @@
                 <!-- Manager Item 1 - Top Performer -->
                 <div class="manager-item" onclick="toggleManagerDetails('manager1')">
                     <div class="manager-info">
-                        <div class="manager-name">M.A. Ameen Sheriff (TG)</div>
+                        <div class="manager-name">
+                            <span class="expand-icon">▼</span>
+                            M.A. Ameen Sheriff (TG)
+                        </div>
                         <div class="manager-details">
                             <span>78 calls | 8.1 min avg | Tamil, Telugu, English</span>
                             <div class="performance-indicators">
@@ -646,7 +709,10 @@
                 <!-- Manager Item 2 - Good Performer -->
                 <div class="manager-item" onclick="toggleManagerDetails('manager2')">
                     <div class="manager-info">
-                        <div class="manager-name">Anand Singh Tomar (TG)</div>
+                        <div class="manager-name">
+                            <span class="expand-icon">▼</span>
+                            Anand Singh Tomar (TG)
+                        </div>
                         <div class="manager-details">
                             <span>92 calls | 7.9 min avg | Hindi, English</span>
                             <div class="performance-indicators">
@@ -681,7 +747,10 @@
                 <!-- Manager Item 3 - Average Performer -->
                 <div class="manager-item" onclick="toggleManagerDetails('manager3')">
                     <div class="manager-info">
-                        <div class="manager-name">Priya Sharma (MH)</div>
+                        <div class="manager-name">
+                            <span class="expand-icon">▼</span>
+                            Priya Sharma (MH)
+                        </div>
                         <div class="manager-details">
                             <span>64 calls | 9.2 min avg | Hindi, Marathi, English</span>
                             <div class="performance-indicators">
@@ -716,7 +785,10 @@
                 <!-- Manager Item 4 - Needs Improvement -->
                 <div class="manager-item" onclick="toggleManagerDetails('manager4')">
                     <div class="manager-info">
-                        <div class="manager-name">Rajesh Kumar (KA)</div>
+                        <div class="manager-name">
+                            <span class="expand-icon">▼</span>
+                            Rajesh Kumar (KA)
+                        </div>
                         <div class="manager-details">
                             <span>45 calls | 11.4 min avg | Kannada, English</span>
                             <span class="red-flag">Red Flag</span>
@@ -820,7 +892,10 @@
                 <!-- Manager Item 5 - Poor Performer -->
                 <div class="manager-item" onclick="toggleManagerDetails('manager5')">
                     <div class="manager-info">
-                        <div class="manager-name">Pravar Sanjay Patil (TG)</div>
+                        <div class="manager-name">
+                            <span class="expand-icon">▼</span>
+                            Pravar Sanjay Patil (TG)
+                        </div>
                         <div class="manager-details">
                             <span>89 calls | 11.8 min avg | Telugu, English</span>
                             <span class="red-flag">Multiple Red Flags</span>
@@ -936,7 +1011,20 @@
         function toggleManagerDetails(managerId) {
             const details = document.getElementById(managerId);
             if (details) {
-                details.classList.toggle('show');
+                const managerItem = details.previousElementSibling;
+                
+                // Toggle the expanded state
+                const isExpanded = details.classList.contains('show');
+                
+                if (isExpanded) {
+                    // Collapse
+                    details.classList.remove('show');
+                    managerItem.classList.remove('expanded');
+                } else {
+                    // Expand
+                    details.classList.add('show');
+                    managerItem.classList.add('expanded');
+                }
             }
         }
     </script>

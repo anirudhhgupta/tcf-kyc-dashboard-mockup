@@ -220,8 +220,41 @@
 
         .call-status {
             display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+
+        .status-section {
+            display: flex;
             align-items: center;
             gap: 8px;
+        }
+
+        .view-details-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #64b5f6;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .view-details-btn:hover {
+            background: #42a5f5;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(100, 181, 246, 0.3);
+        }
+
+        .view-details-btn svg {
+            width: 14px;
+            height: 14px;
         }
 
         .status-indicator {
@@ -288,16 +321,72 @@
         .keyword-warning { background-color: #78350f; color: #f59e0b; }
         .keyword-danger { background-color: #7f1d1d; color: #ef4444; }
 
+        /* Expand Icon */
+        .expand-icon {
+            display: inline-block;
+            margin-right: 12px;
+            font-size: 16px;
+            color: #64b5f6;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            width: 20px;
+            text-align: center;
+        }
+
+        .call-item.expanded .expand-icon {
+            transform: rotate(180deg);
+            color: #ffffff;
+        }
+
+        .call-item:hover .expand-icon {
+            color: #ffffff;
+            font-size: 18px;
+        }
+
         /* Expanded Call Details */
         .call-details {
             display: none;
             margin-top: 16px;
             padding-top: 16px;
             border-top: 1px solid #2a2f45;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
         .call-details.expanded {
             display: block;
+            opacity: 1;
+            max-height: 1000px;
+            animation: expandDetails 0.3s ease;
+        }
+
+        @keyframes expandDetails {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Call Item Hover State */
+        .call-item {
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .call-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .call-item:hover .expand-icon {
+            color: #ffffff;
         }
 
         .details-grid {
@@ -507,10 +596,13 @@
                 </div>
 
                 <!-- Call Item 1 -->
-                <div class="call-item" onclick="window.location.href='call-detail.html'" style="cursor: pointer;">
+                <div class="call-item" onclick="toggleCallDetails('call1')">
                     <div class="call-header">
                         <div>
-                            <div class="call-title">TCF Verification - Lodha Developer Project Discussion in Jogeshwari</div>
+                            <div class="call-title">
+                                <span class="expand-icon">▼</span>
+                                TCF Verification - Lodha Developer Project Discussion in Jogeshwari
+                            </div>
                             <div class="call-meta">
                                 <div class="call-meta-item">
                                     <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
@@ -533,8 +625,17 @@
                             </div>
                         </div>
                         <div class="call-status">
-                            <div class="status-indicator status-success"></div>
-                            <span style="color: #10b981; font-size: 12px; font-weight: 600;">COMPLETED</span>
+                            <button class="view-details-btn" onclick="window.location.href='call-detail.html'; event.stopPropagation();">
+                                <svg width="14" height="14" viewBox="0 0 20 20" fill="currentColor">
+                                    <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
+                                    <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                </svg>
+                                View Details
+                            </button>
+                            <div class="status-section">
+                                <div class="status-indicator status-success"></div>
+                                <span style="color: #10b981; font-size: 12px; font-weight: 600;">COMPLETED</span>
+                            </div>
                         </div>
                     </div>
 
@@ -661,7 +762,10 @@
                 <div class="call-item" onclick="toggleCallDetails('call2')">
                     <div class="call-header">
                         <div>
-                            <div class="call-title">TCF Verification - Data Discrepancy Resolution</div>
+                            <div class="call-title">
+                                <span class="expand-icon">▼</span>
+                                TCF Verification - Data Discrepancy Resolution
+                            </div>
                             <div class="call-meta">
                                 <div class="call-meta-item">
                                     <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
@@ -747,7 +851,10 @@
                 <div class="call-item" onclick="toggleCallDetails('call3')">
                     <div class="call-header">
                         <div>
-                            <div class="call-title">Extended TCF Call - Builder Timeline & Penalty Discussion</div>
+                            <div class="call-title">
+                                <span class="expand-icon">▼</span>
+                                Extended TCF Call - Builder Timeline & Penalty Discussion
+                            </div>
                             <div class="call-meta">
                                 <div class="call-meta-item">
                                     <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
@@ -836,7 +943,10 @@
                 <div class="call-item" onclick="toggleCallDetails('call4')">
                     <div class="call-header">
                         <div>
-                            <div class="call-title">TCF Verification - Language Switch Success</div>
+                            <div class="call-title">
+                                <span class="expand-icon">▼</span>
+                                TCF Verification - Language Switch Success
+                            </div>
                             <div class="call-meta">
                                 <div class="call-meta-item">
                                     <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
@@ -924,7 +1034,10 @@
                 <div class="call-item" onclick="toggleCallDetails('call5')">
                     <div class="call-header">
                         <div>
-                            <div class="call-title">TCF Verification - Advisory Mail Acknowledgment Pending</div>
+                            <div class="call-title">
+                                <span class="expand-icon">▼</span>
+                                TCF Verification - Advisory Mail Acknowledgment Pending
+                            </div>
                             <div class="call-meta">
                                 <div class="call-meta-item">
                                     <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
@@ -1019,7 +1132,20 @@
     <script>
         function toggleCallDetails(callId) {
             const details = document.getElementById(callId);
-            details.classList.toggle('expanded');
+            const callItem = details.closest('.call-item');
+            
+            // Toggle the expanded state
+            const isExpanded = details.classList.contains('expanded');
+            
+            if (isExpanded) {
+                // Collapse
+                details.classList.remove('expanded');
+                callItem.classList.remove('expanded');
+            } else {
+                // Expand
+                details.classList.add('expanded');
+                callItem.classList.add('expanded');
+            }
         }
     </script>
 </body>
