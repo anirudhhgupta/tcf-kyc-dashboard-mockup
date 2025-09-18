@@ -1,0 +1,944 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCF KYC Analytics - Relationship Managers</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #1a1f36;
+            color: white;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background-color: #151828;
+            padding: 20px 0;
+            border-right: 1px solid #2a2f45;
+        }
+
+        .logo {
+            padding: 0 20px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #64b5f6;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #2a2f45;
+            color: white;
+        }
+
+        .nav-item.active {
+            border-right: 3px solid #64b5f6;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: #1a1f36;
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 12px 8px 36px;
+            color: white;
+            width: 300px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .employee-selector {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .date-picker {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+        }
+
+        .reset-btn {
+            background-color: #64b5f6;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .export-btn {
+            background-color: #374151;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 8px;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 24px;
+            flex: 1;
+        }
+
+        /* Summary Stats */
+        .summary-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 24px;
+            background-color: #252a41;
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid #2a2f45;
+        }
+
+        .summary-stat {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            color: #9ca3af;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        /* Managers Container */
+        .managers-container {
+            background-color: #252a41;
+            border-radius: 12px;
+            border: 1px solid #2a2f45;
+            overflow: hidden;
+        }
+
+        .managers-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .managers-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .sort-dropdown {
+            background-color: #374151;
+            border: 1px solid #4b5563;
+            border-radius: 6px;
+            padding: 6px 12px;
+            color: white;
+            font-size: 12px;
+            cursor: pointer;
+        }
+
+        /* Manager Item */
+        .manager-item {
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .manager-item:hover {
+            background-color: #1e2139;
+        }
+
+        .manager-item:last-child {
+            border-bottom: none;
+        }
+
+        .manager-info {
+            flex: 1;
+        }
+
+        .manager-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .manager-details {
+            color: #9ca3af;
+            font-size: 12px;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .manager-metrics {
+            display: flex;
+            gap: 24px;
+            align-items: center;
+        }
+
+        .metric {
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 2px;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+
+        /* Score Badge */
+        .score-badge {
+            background-color: #10b981;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .score-warning {
+            background-color: #f59e0b;
+        }
+
+        .score-danger {
+            background-color: #ef4444;
+        }
+
+        /* Red Flag Indicator */
+        .red-flag {
+            background-color: #ef4444;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-left: 8px;
+        }
+
+        /* Detailed Metrics (Hidden by default) */
+        .manager-details-expanded {
+            display: none;
+            padding: 20px 24px;
+            background-color: #1e2139;
+            border-top: 1px solid #2a2f45;
+        }
+
+        .manager-details-expanded.show {
+            display: block;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .details-section {
+            background-color: #1a1f36;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .details-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .details-metrics {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .detail-metric {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background-color: #252a41;
+            border-radius: 4px;
+        }
+
+        .detail-metric-label {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .detail-metric-value {
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .metric-success { color: #10b981; }
+        .metric-warning { color: #f59e0b; }
+        .metric-danger { color: #ef4444; }
+
+        /* Performance Indicators */
+        .performance-indicators {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .indicator-high { background-color: #10b981; }
+        .indicator-medium { background-color: #f59e0b; }
+        .indicator-low { background-color: #ef4444; }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .pagination-btn {
+            background-color: #374151;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .details-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .manager-metrics {
+                flex-direction: column;
+                gap: 12px;
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-stats {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">TCF Analytics</div>
+        <nav>
+            <a href="kyc-overview-mockup.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+                Overview
+            </a>
+            <a href="kyc-calls-mockup.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"/>
+                </svg>
+                Calls
+            </a>
+            <a href="kyc-relationship-managers-mockup.html" class="nav-item active">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                Relationship Managers
+            </a>
+            <a href="#" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"/>
+                </svg>
+                Feedback
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="search-container">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/>
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search KYC call transcripts...">
+                </div>
+                <select class="employee-selector">
+                    <option>426 employees selected</option>
+                    <option>All RMs</option>
+                    <option>Top Performers</option>
+                    <option>New RMs</option>
+                </select>
+            </div>
+            <div class="top-bar-right">
+                <span style="color: #9ca3af; font-size: 12px;">Start Date</span>
+                <input type="date" class="date-picker" value="2025-08-18">
+                <span style="color: #9ca3af; font-size: 12px;">End Date</span>
+                <input type="date" class="date-picker" value="2025-09-17">
+                <button class="reset-btn">RESET</button>
+                <button class="export-btn">EXPORT CSV</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Summary Stats -->
+            <div class="summary-stats">
+                <div class="summary-stat">
+                    <div class="stat-value">87</div>
+                    <div class="stat-label">Active RMs</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="stat-value">4.2</div>
+                    <div class="stat-label">Avg Compliance Score</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="stat-value">2,847</div>
+                    <div class="stat-label">Total KYC Calls</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="stat-value">94%</div>
+                    <div class="stat-label">Avg Completion Rate</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="stat-value">8.3 min</div>
+                    <div class="stat-label">Avg Call Duration</div>
+                </div>
+                <div class="summary-stat">
+                    <div class="stat-value">12</div>
+                    <div class="stat-label">Red Flags</div>
+                </div>
+            </div>
+
+            <!-- Managers Container -->
+            <div class="managers-container">
+                <div class="managers-header">
+                    <h2 class="managers-title">TCF KYC Relationship Managers</h2>
+                    <select class="sort-dropdown">
+                        <option>Sort by: KYC Compliance Score ↓</option>
+                        <option>Sort by: Data Accuracy Score ↓</option>
+                        <option>Sort by: Customer Satisfaction ↓</option>
+                        <option>Sort by: Total Calls ↓</option>
+                        <option>Sort by: Name ↑</option>
+                        <option>Sort by: Red Flags ↑</option>
+                    </select>
+                </div>
+
+                <!-- Manager Item 1 - Top Performer -->
+                <div class="manager-item" onclick="toggleManagerDetails('manager1')">
+                    <div class="manager-info">
+                        <div class="manager-name">M.A. Ameen Sheriff (TG)</div>
+                        <div class="manager-details">
+                            <span>78 calls | 8.1 min avg | Tamil, Telugu, English</span>
+                            <div class="performance-indicators">
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-medium"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manager-metrics">
+                        <div class="metric">
+                            <div class="metric-value metric-success">98%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">99%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">96%</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">4.8</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="score-badge">4.85</div>
+                    </div>
+                </div>
+
+                <div class="manager-details-expanded" id="manager1">
+                    <div class="details-grid">
+                        <div class="details-section">
+                            <h4 class="details-title">KYC Compliance Metrics</h4>
+                            <div class="details-metrics">
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Mandatory Questions</span>
+                                    <span class="detail-metric-value metric-success">98%</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Identity Verification</span>
+                                    <span class="detail-metric-value metric-success">100%</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Financial Verification</span>
+                                    <span class="detail-metric-value metric-success">97%</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">RERA Compliance</span>
+                                    <span class="detail-metric-value metric-success">100%</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="details-section">
+                            <h4 class="details-title">Performance Insights</h4>
+                            <div class="details-metrics">
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Extended Calls (15m+)</span>
+                                    <span class="detail-metric-value">8%</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Data Corrections</span>
+                                    <span class="detail-metric-value">2</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Multi-unit Calls</span>
+                                    <span class="detail-metric-value">12</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Language Switches</span>
+                                    <span class="detail-metric-value metric-success">45</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="details-section">
+                            <h4 class="details-title">Strengths & Areas</h4>
+                            <div class="details-metrics">
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Cultural Sensitivity</span>
+                                    <span class="detail-metric-value metric-success">Excellent</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Call Efficiency</span>
+                                    <span class="detail-metric-value metric-success">High</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Customer Patience</span>
+                                    <span class="detail-metric-value metric-success">High</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Red Flags</span>
+                                    <span class="detail-metric-value metric-success">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manager Item 2 - Good Performer -->
+                <div class="manager-item" onclick="toggleManagerDetails('manager2')">
+                    <div class="manager-info">
+                        <div class="manager-name">Anand Singh Tomar (TG)</div>
+                        <div class="manager-details">
+                            <span>92 calls | 7.9 min avg | Hindi, English</span>
+                            <div class="performance-indicators">
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-high"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manager-metrics">
+                        <div class="metric">
+                            <div class="metric-value metric-success">96%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">98%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">92%</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">4.7</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="score-badge">4.78</div>
+                    </div>
+                </div>
+
+                <!-- Manager Item 3 - Average Performer -->
+                <div class="manager-item" onclick="toggleManagerDetails('manager3')">
+                    <div class="manager-info">
+                        <div class="manager-name">Priya Sharma (MH)</div>
+                        <div class="manager-details">
+                            <span>64 calls | 9.2 min avg | Hindi, Marathi, English</span>
+                            <div class="performance-indicators">
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-medium"></div>
+                                <div class="indicator indicator-medium"></div>
+                                <div class="indicator indicator-high"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manager-metrics">
+                        <div class="metric">
+                            <div class="metric-value metric-success">94%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-warning">91%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-warning">85%</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">4.3</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="score-badge">4.12</div>
+                    </div>
+                </div>
+
+                <!-- Manager Item 4 - Needs Improvement -->
+                <div class="manager-item" onclick="toggleManagerDetails('manager4')">
+                    <div class="manager-info">
+                        <div class="manager-name">Rajesh Kumar (KA)</div>
+                        <div class="manager-details">
+                            <span>45 calls | 11.4 min avg | Kannada, English</span>
+                            <span class="red-flag">Red Flag</span>
+                            <div class="performance-indicators">
+                                <div class="indicator indicator-medium"></div>
+                                <div class="indicator indicator-medium"></div>
+                                <div class="indicator indicator-low"></div>
+                                <div class="indicator indicator-medium"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manager-metrics">
+                        <div class="metric">
+                            <div class="metric-value metric-warning">87%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-warning">89%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-danger">72%</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-warning">3.8</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="score-badge score-warning">3.45</div>
+                    </div>
+                </div>
+
+                <div class="manager-details-expanded" id="manager4">
+                    <div class="details-grid">
+                        <div class="details-section">
+                            <h4 class="details-title">Areas for Improvement</h4>
+                            <div class="details-metrics">
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Advisory Mail Follow-up</span>
+                                    <span class="detail-metric-value metric-danger">Needs Focus</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">DOB Verification Accuracy</span>
+                                    <span class="detail-metric-value metric-warning">Moderate</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Extended Call Management</span>
+                                    <span class="detail-metric-value metric-warning">Training Needed</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Customer Escalations</span>
+                                    <span class="detail-metric-value metric-danger">3 this month</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="details-section">
+                            <h4 class="details-title">Training Recommendations</h4>
+                            <div class="details-metrics">
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Advisory Mail Process</span>
+                                    <span class="detail-metric-value metric-danger">Priority</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Data Verification Protocols</span>
+                                    <span class="detail-metric-value metric-warning">Recommended</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Customer De-escalation</span>
+                                    <span class="detail-metric-value metric-danger">Urgent</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Call Efficiency Workshop</span>
+                                    <span class="detail-metric-value metric-warning">Scheduled</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="details-section">
+                            <h4 class="details-title">Recent Issues</h4>
+                            <div class="details-metrics">
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Compliance Gaps</span>
+                                    <span class="detail-metric-value metric-danger">6 calls</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Customer Complaints</span>
+                                    <span class="detail-metric-value metric-danger">2</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Data Corrections</span>
+                                    <span class="detail-metric-value metric-warning">8</span>
+                                </div>
+                                <div class="detail-metric">
+                                    <span class="detail-metric-label">Follow-up Missed</span>
+                                    <span class="detail-metric-value metric-danger">4</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Manager Item 5 - Poor Performer -->
+                <div class="manager-item" onclick="toggleManagerDetails('manager5')">
+                    <div class="manager-info">
+                        <div class="manager-name">Pravar Sanjay Patil (TG)</div>
+                        <div class="manager-details">
+                            <span>89 calls | 11.8 min avg | Telugu, English</span>
+                            <span class="red-flag">Multiple Red Flags</span>
+                            <div class="performance-indicators">
+                                <div class="indicator indicator-low"></div>
+                                <div class="indicator indicator-low"></div>
+                                <div class="indicator indicator-low"></div>
+                                <div class="indicator indicator-medium"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manager-metrics">
+                        <div class="metric">
+                            <div class="metric-value metric-danger">74%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-danger">78%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-danger">58%</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-danger">2.9</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="score-badge score-danger">2.18</div>
+                    </div>
+                </div>
+
+                <!-- Additional Manager Items -->
+                <div class="manager-item">
+                    <div class="manager-info">
+                        <div class="manager-name">Kavita Shah (GJ)</div>
+                        <div class="manager-details">
+                            <span>67 calls | 8.5 min avg | Gujarati, Hindi, English</span>
+                            <div class="performance-indicators">
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-high"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manager-metrics">
+                        <div class="metric">
+                            <div class="metric-value metric-success">97%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">98%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">94%</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">4.6</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="score-badge">4.71</div>
+                    </div>
+                </div>
+
+                <div class="manager-item">
+                    <div class="manager-info">
+                        <div class="manager-name">Arun Patel (MH)</div>
+                        <div class="manager-details">
+                            <span>71 calls | 9.1 min avg | Marathi, Hindi, English</span>
+                            <div class="performance-indicators">
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-high"></div>
+                                <div class="indicator indicator-medium"></div>
+                                <div class="indicator indicator-high"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="manager-metrics">
+                        <div class="metric">
+                            <div class="metric-value metric-success">93%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">96%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-warning">81%</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                        <div class="metric">
+                            <div class="metric-value metric-success">4.5</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="score-badge">4.32</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="pagination-btn" disabled>← PREVIOUS</button>
+                <span class="pagination-info">Page 1 of 3 | Showing 7 of 87 managers</span>
+                <button class="pagination-btn">NEXT →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleManagerDetails(managerId) {
+            const details = document.getElementById(managerId);
+            if (details) {
+                details.classList.toggle('show');
+            }
+        }
+    </script>
+</body>
+</html>

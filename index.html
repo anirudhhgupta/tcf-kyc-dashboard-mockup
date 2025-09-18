@@ -1,0 +1,1856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCF KYC Analytics - Overview</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #1a1f36;
+            color: white;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background-color: #151828;
+            padding: 20px 0;
+            border-right: 1px solid #2a2f45;
+        }
+
+        .logo {
+            padding: 0 20px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #64b5f6;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #2a2f45;
+            color: white;
+        }
+
+        .nav-item.active {
+            border-right: 3px solid #64b5f6;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: #1a1f36;
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 12px 8px 36px;
+            color: white;
+            width: 300px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .employee-selector {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .date-picker {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+        }
+
+        .reset-btn {
+            background-color: #64b5f6;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 24px;
+            flex: 1;
+        }
+
+        /* Call Type Filters */
+        .call-type-filters {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .filter-btn {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: #9ca3af;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-btn.active {
+            background-color: #64b5f6;
+            color: white;
+            border-color: #64b5f6;
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 24px;
+        }
+
+        .dashboard-card {
+            background-color: #252a41;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #2a2f45;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .info-icon {
+            width: 16px;
+            height: 16px;
+            fill: #9ca3af;
+            cursor: help;
+        }
+
+        /* Performance Metrics */
+        .performance-metrics {
+            text-align: center;
+        }
+
+        .main-metric {
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .metric-label {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .metric-sublabel {
+            color: #64b5f6;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .performance-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin: 20px 0 16px 0;
+        }
+
+        .performance-stat {
+            text-align: center;
+        }
+
+        .performance-stat .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .performance-stat .stat-label {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .performance-trends {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #2a2f45;
+        }
+
+        .trend-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .trend-label {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .trend-value {
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #10b981; /* Green for efficiency improvements */
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .kpi-item {
+            text-align: center;
+            padding: 12px;
+            background-color: #1e2139;
+            border-radius: 8px;
+        }
+
+        .kpi-value {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .kpi-success { color: #10b981; }
+        .kpi-warning { color: #f59e0b; }
+        .kpi-danger { color: #ef4444; }
+        .kpi-info { color: #64b5f6; }
+
+        /* Secondary KPIs */
+        .secondary-kpis {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .secondary-kpi {
+            text-align: center;
+        }
+
+        .secondary-kpi-value {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .secondary-kpi-label {
+            font-size: 11px;
+            color: #9ca3af;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            margin-top: 20px;
+            height: 300px;
+        }
+
+        /* Chart View Tabs */
+        .chart-tabs {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #2a2f45;
+        }
+
+        .chart-tab {
+            padding: 12px 20px;
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .chart-tab.active {
+            color: #64b5f6;
+            border-bottom-color: #64b5f6;
+        }
+
+        .chart-tab:hover {
+            color: white;
+        }
+
+        /* Widget Tabs (for KYC widget) */
+        .widget-tabs {
+            display: flex;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #2a2f45;
+        }
+
+        .widget-tab {
+            padding: 8px 16px;
+            background: transparent;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .widget-tab.active {
+            color: #64b5f6;
+            border-bottom-color: #64b5f6;
+        }
+
+        .widget-tab:hover {
+            color: white;
+        }
+
+        /* Widget Tab Content */
+        .widget-tab-content {
+            display: none;
+            padding-top: 8px;
+        }
+
+        .widget-tab-content.active {
+            display: block;
+        }
+
+        /* Widget Metric Cards */
+        .widget-metric-card {
+            background-color: #1e2139;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .widget-metric-left {
+            flex: 1;
+        }
+
+        .widget-metric-main {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .widget-metric-label {
+            font-size: 12px;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+
+        .widget-metric-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            min-width: 80px;
+        }
+
+        .widget-trend {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .widget-trend-up {
+            color: #10b981;
+        }
+
+        .widget-trend-down {
+            color: #ef4444;
+        }
+
+        .widget-trend-neutral {
+            color: #9ca3af;
+        }
+
+        .widget-mini-chart {
+            width: 60px;
+            height: 20px;
+            background: linear-gradient(90deg, #374151 0%, #10b981 100%);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .widget-mini-chart.declining {
+            background: linear-gradient(90deg, #374151 0%, #ef4444 100%);
+        }
+
+        .widget-mini-chart.neutral {
+            background: linear-gradient(90deg, #374151 0%, #64b5f6 100%);
+        }
+
+        /* Compact Progress Bars for Widget */
+        .widget-progress-container {
+            margin-bottom: 12px;
+        }
+
+        .widget-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .widget-progress-label {
+            font-size: 13px;
+            color: white;
+            font-weight: 500;
+        }
+
+        .widget-progress-value {
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .widget-progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #2a2f45;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .widget-progress-fill {
+            height: 100%;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        /* Widget Donut Chart */
+        .widget-donut-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 8px 0 12px 0;
+        }
+
+        /* Widget Grid Layout */
+        .widget-grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        /* Metric Cards Grid */
+        .metric-cards-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .metric-card {
+            background-color: #1e2139;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #2a2f45;
+        }
+
+        .metric-card-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .metric-card-label {
+            font-size: 14px;
+            color: #9ca3af;
+            margin-bottom: 4px;
+        }
+
+        .metric-card-change {
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .trend-up {
+            color: #10b981;
+        }
+
+        .trend-down {
+            color: #ef4444;
+        }
+
+        .trend-neutral {
+            color: #9ca3af;
+        }
+
+        /* Progress Bars */
+        .progress-container {
+            margin: 16px 0;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .progress-label {
+            font-size: 14px;
+            color: white;
+        }
+
+        .progress-value {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #2a2f45;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+
+        /* Donut Chart Container */
+        .donut-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 200px;
+            margin: 20px 0;
+        }
+
+        /* Simple Chart View */
+        .simple-chart {
+            display: none;
+        }
+
+        .simple-chart.active {
+            display: block;
+        }
+
+        /* Insights Grid */
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .insight-card {
+            background-color: #1e2139;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .insight-card.urgent {
+            border-left-color: #ef4444;
+        }
+
+        .insight-card.warning {
+            border-left-color: #f59e0b;
+        }
+
+        .insight-card.positive {
+            border-left-color: #10b981;
+        }
+
+        .insight-card.info {
+            border-left-color: #64b5f6;
+        }
+
+        .insight-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .insight-content h4 {
+            color: white;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .insight-content p {
+            color: #9ca3af;
+            font-size: 13px;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .insight-action {
+            background-color: #374151;
+            color: #64b5f6;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        @media (max-width: 768px) {
+            .insights-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .performance-stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .performance-trends {
+                flex-direction: column;
+                gap: 8px;
+            }
+        }
+
+        /* Full Width Sections */
+        .full-width-section {
+            margin-bottom: 24px;
+        }
+
+        .section-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        /* Performance Ranking */
+        .ranking-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .ranking-section h4 {
+            color: white;
+            margin-bottom: 16px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .performer-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            background-color: #1e2139;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+
+        .rank-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 12px;
+        }
+
+        .rank-top { background-color: #10b981; color: white; }
+        .rank-bottom { background-color: #ef4444; color: white; }
+
+        .performer-info {
+            flex: 1;
+        }
+
+        .performer-name {
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .performer-stats {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .performer-score {
+            color: #64b5f6;
+            font-weight: 600;
+        }
+
+        /* Recent Activity */
+        .activity-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .activity-item {
+            display: flex;
+            padding: 16px;
+            border-bottom: 1px solid #2a2f45;
+            transition: background-color 0.2s;
+        }
+
+        .activity-item:hover {
+            background-color: #1e2139;
+        }
+
+        .activity-icon {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 12px;
+            margin-top: 6px;
+            flex-shrink: 0;
+        }
+
+        .activity-success { background-color: #10b981; }
+        .activity-warning { background-color: #f59e0b; }
+        .activity-danger { background-color: #ef4444; }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-title {
+            color: white;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .activity-details {
+            color: #9ca3af;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+
+        .activity-keywords {
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+        }
+
+        .keyword-tag {
+            background-color: #374151;
+            color: #9ca3af;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+
+        .activity-meta {
+            text-align: right;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        .view-all-btn {
+            width: 100%;
+            background-color: #64b5f6;
+            border: none;
+            border-radius: 6px;
+            padding: 12px;
+            color: white;
+            font-weight: 500;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .section-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">TCF Analytics</div>
+        <nav>
+            <a href="#" class="nav-item active">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+                Overview
+            </a>
+            <a href="kyc-calls-mockup.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"/>
+                </svg>
+                Calls
+            </a>
+            <a href="kyc-relationship-managers-mockup.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                Relationship Managers
+            </a>
+            <a href="#" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"/>
+                </svg>
+                Feedback
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="search-container">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/>
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search KYC call transcripts...">
+                </div>
+                <select class="employee-selector">
+                    <option>427 employees selected</option>
+                    <option>All RMs</option>
+                    <option>Top Performers</option>
+                    <option>New RMs</option>
+                </select>
+            </div>
+            <div class="top-bar-right">
+                <span style="color: #9ca3af; font-size: 12px;">Start Date</span>
+                <input type="date" class="date-picker" value="2025-08-18">
+                <span style="color: #9ca3af; font-size: 12px;">End Date</span>
+                <input type="date" class="date-picker" value="2025-09-17">
+                <button class="reset-btn">RESET</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Call Type Filters -->
+            <div class="call-type-filters">
+                <button class="filter-btn active">ALL TCF CALLS</button>
+                <button class="filter-btn">COMPLETED</button>
+                <button class="filter-btn">INCOMPLETE</button>
+                <button class="filter-btn">FOLLOW-UP REQUIRED</button>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Call Performance -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg class="info-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                            </svg>
+                            KYC Call Performance
+                        </h3>
+                    </div>
+                    <div class="performance-metrics">
+                        <div class="main-metric">2,847</div>
+                        <div class="metric-label">Total KYC Calls</div>
+                        <div class="metric-sublabel">
+                            <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                            </svg>
+                            Avg 8.3 min
+                        </div>
+                        
+                        <!-- Additional Performance Metrics -->
+                        <div class="performance-stats-grid">
+                            <div class="performance-stat">
+                                <div class="stat-value kpi-success">94%</div>
+                                <div class="stat-label">Completion Rate</div>
+                            </div>
+                            <div class="performance-stat">
+                                <div class="stat-value kpi-info">428</div>
+                                <div class="stat-label">Today's Calls</div>
+                            </div>
+                            <div class="performance-stat">
+                                <div class="stat-value kpi-warning">15%</div>
+                                <div class="stat-label">Extended (15m+)</div>
+                            </div>
+                            <div class="performance-stat">
+                                <div class="stat-value kpi-success">4.2</div>
+                                <div class="stat-label">Avg Customer Rating</div>
+                            </div>
+                        </div>
+                        
+                        <div class="performance-trends">
+                            <div class="trend-item">
+                                <span class="trend-label">This Week</span>
+                                <span class="trend-value trend-up">↗ +147 calls</span>
+                            </div>
+                            <div class="trend-item">
+                                <span class="trend-label">Efficiency</span>
+                                <span class="trend-value trend-down">↘ -0.3 min avg</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KYC Metrics & KPIs -->
+                <div class="dashboard-card">
+                    <div class="card-header">
+                        <h3 class="card-title">
+                            <svg class="info-icon" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                            </svg>
+                            KYC Metrics & KPIs
+                        </h3>
+                    </div>
+                    
+                    <!-- Widget Tabs -->
+                    <div class="widget-tabs">
+                        <button class="widget-tab active" onclick="switchWidgetTab('all')">All</button>
+                        <button class="widget-tab" onclick="switchWidgetTab('compliance')">Compliance</button>
+                        <button class="widget-tab" onclick="switchWidgetTab('accuracy')">Accuracy</button>
+                        <button class="widget-tab" onclick="switchWidgetTab('operations')">Operations</button>
+                    </div>
+
+                    <!-- All Tab - Current View -->
+                    <div id="all-tab" class="widget-tab-content active">
+                        <div class="kpi-grid">
+                            <div class="kpi-item">
+                                <div class="kpi-value kpi-success">94%</div>
+                                <div class="kpi-label">Compliance Score</div>
+                            </div>
+                            <div class="kpi-item">
+                                <div class="kpi-value kpi-success">97%</div>
+                                <div class="kpi-label">Data Accuracy</div>
+                            </div>
+                            <div class="kpi-item">
+                                <div class="kpi-value kpi-warning">82%</div>
+                                <div class="kpi-label">Advisory Mail ACK</div>
+                            </div>
+                            <div class="kpi-item">
+                                <div class="kpi-value kpi-success">91%</div>
+                                <div class="kpi-label">Sales Commitment Doc</div>
+                            </div>
+                        </div>
+                        <div class="secondary-kpis">
+                            <div class="secondary-kpi">
+                                <div class="secondary-kpi-value kpi-warning">12%</div>
+                                <div class="secondary-kpi-label">Missing Verifications</div>
+                            </div>
+                            <div class="secondary-kpi">
+                                <div class="secondary-kpi-value kpi-danger">8%</div>
+                                <div class="secondary-kpi-label">Data Discrepancies</div>
+                            </div>
+                            <div class="secondary-kpi">
+                                <div class="secondary-kpi-value kpi-info">15%</div>
+                                <div class="secondary-kpi-label">Extended Calls (15m+)</div>
+                            </div>
+                            <div class="secondary-kpi">
+                                <div class="secondary-kpi-value kpi-danger">3%</div>
+                                <div class="secondary-kpi-label">Customer Complaints</div>
+                            </div>
+                        </div>
+                        <div class="secondary-kpis">
+                            <div class="secondary-kpi">
+                                <div class="secondary-kpi-value" style="color: #9ca3af;">284</div>
+                                <div class="secondary-kpi-label">DOB Corrections</div>
+                            </div>
+                            <div class="secondary-kpi">
+                                <div class="secondary-kpi-value" style="color: #9ca3af;">156</div>
+                                <div class="secondary-kpi-label">Email Corrections</div>
+                            </div>
+                            <div class="secondary-kpi">
+                                <div class="secondary-kpi-value" style="color: #9ca3af;">89</div>
+                                <div class="secondary-kpi-label">Multi-unit Calls</div>
+                            </div>
+                            <div class="secondary-kpi">
+                                <div class="secondary-kpi-value" style="color: #9ca3af;">0</div>
+                                <div class="secondary-kpi-label">Voicemail Calls</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compliance Tab -->
+                    <div id="compliance-tab" class="widget-tab-content">
+                        <!-- Main Compliance Score -->
+                        <div class="widget-metric-card">
+                            <div class="widget-metric-left">
+                                <div class="widget-metric-main kpi-success">94%</div>
+                                <div class="widget-metric-label">Overall Compliance</div>
+                            </div>
+                            <div class="widget-metric-right">
+                                <div class="widget-trend widget-trend-up">
+                                    ↗ +2.4%
+                                </div>
+                                <div class="widget-mini-chart"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Key Compliance Metrics -->
+                        <div class="widget-progress-container">
+                            <div class="widget-progress-header">
+                                <span class="widget-progress-label">Advisory Mail ACK</span>
+                                <span class="widget-progress-value kpi-warning">82%</span>
+                            </div>
+                            <div class="widget-progress-bar">
+                                <div class="widget-progress-fill" style="width: 82%; background-color: #f59e0b;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="widget-progress-container">
+                            <div class="widget-progress-header">
+                                <span class="widget-progress-label">Sales Documentation</span>
+                                <span class="widget-progress-value kpi-success">91%</span>
+                            </div>
+                            <div class="widget-progress-bar">
+                                <div class="widget-progress-fill" style="width: 91%; background-color: #10b981;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Compliance Issues Grid -->
+                        <div class="widget-grid-2">
+                            <div class="widget-metric-card">
+                                <div class="widget-metric-left">
+                                    <div class="widget-metric-main kpi-warning">12%</div>
+                                    <div class="widget-metric-label">Missing Verif.</div>
+                                </div>
+                                <div class="widget-metric-right">
+                                    <div class="widget-trend widget-trend-down">↘ -1.8%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="widget-metric-card">
+                                <div class="widget-metric-left">
+                                    <div class="widget-metric-main kpi-danger">3%</div>
+                                    <div class="widget-metric-label">Complaints</div>
+                                </div>
+                                <div class="widget-metric-right">
+                                    <div class="widget-trend widget-trend-down">↘ -0.5%</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Accuracy Tab -->
+                    <div id="accuracy-tab" class="widget-tab-content">
+                        <!-- Main Accuracy Score -->
+                        <div class="widget-metric-card">
+                            <div class="widget-metric-left">
+                                <div class="widget-metric-main kpi-success">97%</div>
+                                <div class="widget-metric-label">Overall Data Accuracy</div>
+                            </div>
+                            <div class="widget-metric-right">
+                                <div class="widget-trend widget-trend-up">
+                                    ↗ +1.2%
+                                </div>
+                                <div class="widget-mini-chart"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Accuracy Breakdown -->
+                        <div class="widget-progress-container">
+                            <div class="widget-progress-header">
+                                <span class="widget-progress-label">Personal Data</span>
+                                <span class="widget-progress-value kpi-success">98%</span>
+                            </div>
+                            <div class="widget-progress-bar">
+                                <div class="widget-progress-fill" style="width: 98%; background-color: #10b981;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="widget-progress-container">
+                            <div class="widget-progress-header">
+                                <span class="widget-progress-label">Contact Info</span>
+                                <span class="widget-progress-value kpi-success">95%</span>
+                            </div>
+                            <div class="widget-progress-bar">
+                                <div class="widget-progress-fill" style="width: 95%; background-color: #10b981;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Corrections Grid -->
+                        <div class="widget-grid-2">
+                            <div class="widget-metric-card">
+                                <div class="widget-metric-left">
+                                    <div class="widget-metric-main kpi-warning">284</div>
+                                    <div class="widget-metric-label">DOB Fixes</div>
+                                </div>
+                                <div class="widget-metric-right">
+                                    <div class="widget-trend widget-trend-down">↘ -15</div>
+                                    <div class="widget-mini-chart declining"></div>
+                                </div>
+                            </div>
+                            
+                            <div class="widget-metric-card">
+                                <div class="widget-metric-left">
+                                    <div class="widget-metric-main kpi-warning">156</div>
+                                    <div class="widget-metric-label">Email Fixes</div>
+                                </div>
+                                <div class="widget-metric-right">
+                                    <div class="widget-trend widget-trend-down">↘ -8</div>
+                                    <div class="widget-mini-chart declining"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Operations Tab -->
+                    <div id="operations-tab" class="widget-tab-content">
+                        <!-- Main Operations Metrics -->
+                        <div class="widget-metric-card">
+                            <div class="widget-metric-left">
+                                <div class="widget-metric-main kpi-info">2,847</div>
+                                <div class="widget-metric-label">Total Calls</div>
+                            </div>
+                            <div class="widget-metric-right">
+                                <div class="widget-trend widget-trend-up">
+                                    ↗ +147
+                                </div>
+                                <div class="widget-mini-chart"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Call Efficiency Progress -->
+                        <div class="widget-progress-container">
+                            <div class="widget-progress-header">
+                                <span class="widget-progress-label">Call Completion Rate</span>
+                                <span class="widget-progress-value kpi-success">94%</span>
+                            </div>
+                            <div class="widget-progress-bar">
+                                <div class="widget-progress-fill" style="width: 94%; background-color: #10b981;"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="widget-progress-container">
+                            <div class="widget-progress-header">
+                                <span class="widget-progress-label">Avg Duration Target (≤9 min)</span>
+                                <span class="widget-progress-value kpi-success">8.3 min</span>
+                            </div>
+                            <div class="widget-progress-bar">
+                                <div class="widget-progress-fill" style="width: 78%; background-color: #10b981;"></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Operations Grid -->
+                        <div class="widget-grid-2">
+                            <div class="widget-metric-card">
+                                <div class="widget-metric-left">
+                                    <div class="widget-metric-main kpi-warning">15%</div>
+                                    <div class="widget-metric-label">Extended Calls</div>
+                                </div>
+                                <div class="widget-metric-right">
+                                    <div class="widget-trend widget-trend-up">↗ +2.1%</div>
+                                </div>
+                            </div>
+                            
+                            <div class="widget-metric-card">
+                                <div class="widget-metric-left">
+                                    <div class="widget-metric-main kpi-info">89</div>
+                                    <div class="widget-metric-label">Multi-unit</div>
+                                </div>
+                                <div class="widget-metric-right">
+                                    <div class="widget-trend widget-trend-up">↗ +6</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="widget-grid-2">
+                            <div class="widget-metric-card">
+                                <div class="widget-metric-left">
+                                    <div class="widget-metric-main kpi-success">87</div>
+                                    <div class="widget-metric-label">Active RMs</div>
+                                </div>
+                                <div class="widget-metric-right">
+                                    <div class="widget-trend widget-trend-neutral">→ 0</div>
+                                </div>
+                            </div>
+                            
+                            <div class="widget-metric-card">
+                                <div class="widget-metric-left">
+                                    <div class="widget-metric-main kpi-success">0</div>
+                                    <div class="widget-metric-label">Voicemails</div>
+                                </div>
+                                <div class="widget-metric-right">
+                                    <div class="widget-trend widget-trend-neutral">→ 0</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Full Width Sections -->
+            <div class="full-width-section">
+                <div class="section-grid">
+                    <!-- Statistics Chart -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">KYC Performance Analytics</h3>
+                        </div>
+                        
+                        <!-- Chart Tabs -->
+                        <div class="chart-tabs">
+                            <button class="chart-tab active" onclick="switchChartView('trends')">Performance Trends</button>
+                            <button class="chart-tab" onclick="switchChartView('distribution')">RM Performance Distribution</button>
+                            <button class="chart-tab" onclick="switchChartView('insights')">Actionable Insights</button>
+                        </div>
+
+                        <!-- Trends View -->
+                        <div id="trends-view" class="simple-chart active">
+                            <div class="chart-container">
+                                <canvas id="trendsLineChart" width="600" height="300"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Distribution View -->
+                        <div id="distribution-view" class="simple-chart">
+                            <div class="metric-cards-grid">
+                                <div class="metric-card">
+                                    <div class="metric-card-value kpi-success">23</div>
+                                    <div class="metric-card-label">High Performers</div>
+                                    <div class="metric-card-change trend-neutral">
+                                        <span>→</span> >4.0 Score
+                                    </div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-card-value kpi-warning">52</div>
+                                    <div class="metric-card-label">Average Performers</div>
+                                    <div class="metric-card-change trend-neutral">
+                                        <span>→</span> 3.0-4.0 Score
+                                    </div>
+                                </div>
+                                <div class="metric-card">
+                                    <div class="metric-card-value kpi-danger">12</div>
+                                    <div class="metric-card-label">Need Improvement</div>
+                                    <div class="metric-card-change trend-neutral">
+                                        <span>→</span> <3.0 Score
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="chart-container">
+                                <canvas id="distributionBarChart" width="600" height="250"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Insights View -->
+                        <div id="insights-view" class="simple-chart">
+                            <div class="insights-grid">
+                                <div class="insight-card urgent">
+                                    <div class="insight-icon">⚠️</div>
+                                    <div class="insight-content">
+                                        <h4>Urgent Action Required</h4>
+                                        <p>12 RMs have Advisory Mail ACK below 70%</p>
+                                        <span class="insight-action">Schedule training sessions</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="insight-card warning">
+                                    <div class="insight-icon">📉</div>
+                                    <div class="insight-content">
+                                        <h4>Performance Declining</h4>
+                                        <p>DOB corrections increased by 23% this month</p>
+                                        <span class="insight-action">Review verification protocols</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="insight-card positive">
+                                    <div class="insight-icon">📈</div>
+                                    <div class="insight-content">
+                                        <h4>Trending Positive</h4>
+                                        <p>Cultural sensitivity improved across all regions</p>
+                                        <span class="insight-action">Continue current training</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="insight-card info">
+                                    <div class="insight-icon">🔍</div>
+                                    <div class="insight-content">
+                                        <h4>Investigation Needed</h4>
+                                        <p>Extended calls (15m+) concentrated in TG region</p>
+                                        <span class="insight-action">Analyze call patterns</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="insight-card urgent">
+                                    <div class="insight-icon">🚨</div>
+                                    <div class="insight-content">
+                                        <h4>Compliance Risk</h4>
+                                        <p>3 RMs missed RERA compliance in >20% of calls</p>
+                                        <span class="insight-action">Immediate retraining</span>
+                                    </div>
+                                </div>
+                                
+                                <div class="insight-card positive">
+                                    <div class="insight-icon">⭐</div>
+                                    <div class="insight-content">
+                                        <h4>Best Practice</h4>
+                                        <p>Multi-language RMs show 15% better customer ratings</p>
+                                        <span class="insight-action">Expand language training</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Ranking -->
+                    <div class="dashboard-card">
+                        <div class="card-header">
+                            <h3 class="card-title">Performance Ranking</h3>
+                        </div>
+                        <div class="ranking-container">
+                            <div class="ranking-section">
+                                <h4>Top Performers</h4>
+                                <div class="performer-item">
+                                    <div class="rank-number rank-top">1</div>
+                                    <div class="performer-info">
+                                        <div class="performer-name">M.A. Ameen Sheriff (TG)</div>
+                                        <div class="performer-stats">78 calls | 8.1 min avg</div>
+                                    </div>
+                                    <div class="performer-score">Score: 4.85</div>
+                                </div>
+                                <div class="performer-item">
+                                    <div class="rank-number rank-top">2</div>
+                                    <div class="performer-info">
+                                        <div class="performer-name">Anand Singh Tomar (TG)</div>
+                                        <div class="performer-stats">92 calls | 7.9 min avg</div>
+                                    </div>
+                                    <div class="performer-score">Score: 4.78</div>
+                                </div>
+                                <div class="performer-item">
+                                    <div class="rank-number rank-top">3</div>
+                                    <div class="performer-info">
+                                        <div class="performer-name">Ulfas Gowala B.S (TG)</div>
+                                        <div class="performer-stats">67 calls | 7.2 min avg</div>
+                                    </div>
+                                    <div class="performer-score">Score: 4.71</div>
+                                </div>
+                            </div>
+                            <div class="ranking-section">
+                                <h4>Bottom Performers</h4>
+                                <div class="performer-item">
+                                    <div class="rank-number rank-bottom">1</div>
+                                    <div class="performer-info">
+                                        <div class="performer-name">Pravar Sanjay Patil (TG)</div>
+                                        <div class="performer-stats">89 calls | 11.8 min avg</div>
+                                    </div>
+                                    <div class="performer-score">Score: 2.18</div>
+                                </div>
+                                <div class="performer-item">
+                                    <div class="rank-number rank-bottom">2</div>
+                                    <div class="performer-info">
+                                        <div class="performer-name">Ajay Harishchandra Borhade (TT)</div>
+                                        <div class="performer-stats">54 calls | 13.6 min avg</div>
+                                    </div>
+                                    <div class="performer-score">Score: 2.44</div>
+                                </div>
+                                <div class="performer-item">
+                                    <div class="rank-number rank-bottom">3</div>
+                                    <div class="performer-info">
+                                        <div class="performer-name">Amisha Bharmoo Meghele (TG)</div>
+                                        <div class="performer-stats">43 calls | 12.1 min avg</div>
+                                    </div>
+                                    <div class="performer-score">Score: 2.65</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h3 class="card-title">Recent KYC Activity</h3>
+                    <span style="color: #64b5f6; font-size: 12px; cursor: pointer;">→</span>
+                </div>
+                <div class="activity-list">
+                    <div class="activity-item">
+                        <div class="activity-icon activity-success"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">TCF Verification Completed - Multi-unit Property</div>
+                            <div class="activity-details">
+                                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="display: inline; margin-right: 4px;">
+                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                </svg>
+                                Darsh Bipin Shah (TG) (SQY49051)
+                            </div>
+                            <div class="activity-keywords">
+                                <span class="keyword-tag">multi-unit</span>
+                                <span class="keyword-tag">compliance-100%</span>
+                                <span class="keyword-tag">advisory-acknowledged</span>
+                            </div>
+                        </div>
+                        <div class="activity-meta">
+                            12.4 min
+                        </div>
+                    </div>
+                    
+                    <div class="activity-item">
+                        <div class="activity-icon activity-warning"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">KYC Data Discrepancy - DOB Correction Required</div>
+                            <div class="activity-details">
+                                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="display: inline; margin-right: 4px;">
+                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                </svg>
+                                Darsh Bipin Shah (TG) (SQY49051)
+                            </div>
+                            <div class="activity-keywords">
+                                <span class="keyword-tag">dob-mismatch</span>
+                                <span class="keyword-tag">manual-correction</span>
+                                <span class="keyword-tag">verification-pending</span>
+                            </div>
+                        </div>
+                        <div class="activity-meta">
+                            6.3 min
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon activity-success"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">Extended KYC Call - Builder Timeline Discussion</div>
+                            <div class="activity-details">
+                                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="display: inline; margin-right: 4px;">
+                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                </svg>
+                                Pavithra V (TG) (SQY57596)
+                            </div>
+                            <div class="activity-keywords">
+                                <span class="keyword-tag">extended-call</span>
+                                <span class="keyword-tag">builder-timeline</span>
+                                <span class="keyword-tag">customer-satisfaction</span>
+                            </div>
+                        </div>
+                        <div class="activity-meta">
+                            18.3 min
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon activity-success"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">Sales Commitment Documentation - Interior Voucher</div>
+                            <div class="activity-details">
+                                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="display: inline; margin-right: 4px;">
+                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                </svg>
+                                Darsh Bipin Shah (TG) (SQY49051)
+                            </div>
+                            <div class="activity-keywords">
+                                <span class="keyword-tag">sales-commitment</span>
+                                <span class="keyword-tag">interior-voucher</span>
+                                <span class="keyword-tag">documented</span>
+                            </div>
+                        </div>
+                        <div class="activity-meta">
+                            5.4 min
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon activity-danger"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">Advisory Mail Acknowledgment Pending</div>
+                            <div class="activity-details">
+                                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="display: inline; margin-right: 4px;">
+                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                </svg>
+                                Pavithra V (TG) (SQY57596)
+                            </div>
+                            <div class="activity-keywords">
+                                <span class="keyword-tag">advisory-pending</span>
+                                <span class="keyword-tag">follow-up-required</span>
+                                <span class="keyword-tag">compliance-incomplete</span>
+                            </div>
+                        </div>
+                        <div class="activity-meta">
+                            3.3 min
+                        </div>
+                    </div>
+
+                    <div class="activity-item">
+                        <div class="activity-icon activity-success"></div>
+                        <div class="activity-content">
+                            <div class="activity-title">Language Switch Success - Hindi to English</div>
+                            <div class="activity-details">
+                                <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor" style="display: inline; margin-right: 4px;">
+                                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                </svg>
+                                Pavithra V (TG) (SQY57596)
+                            </div>
+                            <div class="activity-keywords">
+                                <span class="keyword-tag">language-switch</span>
+                                <span class="keyword-tag">customer-comfort</span>
+                                <span class="keyword-tag">cultural-sensitivity</span>
+                            </div>
+                        </div>
+                        <div class="activity-meta">
+                            7.2 min
+                        </div>
+                    </div>
+                </div>
+                <button class="view-all-btn">VIEW ALL KYC CALLS</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Switch Chart View Function
+        function switchChartView(view) {
+            // Hide all views
+            document.querySelectorAll('.simple-chart').forEach(chart => {
+                chart.classList.remove('active');
+            });
+            
+            // Remove active class from tabs
+            document.querySelectorAll('.chart-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected view
+            document.getElementById(view + '-view').classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Switch Widget Tab Function
+        function switchWidgetTab(tab) {
+            // Hide all widget tab contents
+            document.querySelectorAll('.widget-tab-content').forEach(content => {
+                content.classList.remove('active');
+            });
+            
+            // Remove active class from widget tabs
+            document.querySelectorAll('.widget-tab').forEach(tabBtn => {
+                tabBtn.classList.remove('active');
+            });
+            
+            // Show selected tab content
+            document.getElementById(tab + '-tab').classList.add('active');
+            event.target.classList.add('active');
+        }
+        
+        // Create Trends Line Chart
+        function createTrendsChart() {
+            const ctx = document.getElementById('trendsLineChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5', 'Week 6', 'Week 7', 'Week 8'],
+                    datasets: [{
+                        label: 'Compliance Score',
+                        data: [89, 91, 94, 92, 90, 93, 95, 94],
+                        borderColor: '#10b981',
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Data Accuracy',
+                        data: [95, 96, 98, 97, 96, 97, 98, 97],
+                        borderColor: '#64b5f6',
+                        backgroundColor: 'rgba(100, 181, 246, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }, {
+                        label: 'Advisory Mail ACK',
+                        data: [78, 79, 83, 81, 80, 82, 84, 82],
+                        borderColor: '#f59e0b',
+                        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom',
+                            labels: {
+                                color: '#9ca3af',
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#374151', drawBorder: false },
+                            ticks: { color: '#9ca3af' }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            max: 100,
+                            grid: { color: '#374151', drawBorder: false },
+                            ticks: {
+                                color: '#9ca3af',
+                                callback: function(value) { return value + '%'; }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create Distribution Bar Chart
+        function createDistributionChart() {
+            const ctx = document.getElementById('distributionBarChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['0-1.0', '1.0-2.0', '2.0-3.0', '3.0-4.0', '4.0-5.0'],
+                    datasets: [{
+                        label: 'Number of RMs',
+                        data: [2, 5, 12, 52, 23],
+                        backgroundColor: ['#ef4444', '#f59e0b', '#64b5f6', '#10b981', '#10b981'],
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            grid: { color: '#374151', drawBorder: false },
+                            ticks: { color: '#9ca3af' },
+                            title: {
+                                display: true,
+                                text: 'Performance Score Range',
+                                color: '#9ca3af'
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#374151', drawBorder: false },
+                            ticks: { color: '#9ca3af' },
+                            title: {
+                                display: true,
+                                text: 'Number of Relationship Managers',
+                                color: '#9ca3af'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Create Donut Chart for Accuracy
+        function createAccuracyDonutChart() {
+            const canvas = document.getElementById('accuracyDonutChart');
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 80;
+            
+            // Data
+            const data = [
+                { label: 'Accurate Data', value: 97, color: '#10b981' },
+                { label: 'Corrections Needed', value: 3, color: '#ef4444' }
+            ];
+            
+            let currentAngle = -Math.PI / 2;
+            
+            data.forEach(segment => {
+                const sliceAngle = (segment.value / 100) * 2 * Math.PI;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = segment.color;
+                ctx.fill();
+                
+                currentAngle += sliceAngle;
+            });
+            
+            // Center circle (to make it a donut)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 45, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1a1f36';
+            ctx.fill();
+            
+            // Center text
+            ctx.fillStyle = 'white';
+            ctx.font = '20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('97%', centerX, centerY - 5);
+            ctx.font = '12px sans-serif';
+            ctx.fillStyle = '#9ca3af';
+            ctx.fillText('Accuracy', centerX, centerY + 15);
+        }
+        
+        // Create Widget Accuracy Donut Chart
+        function createWidgetAccuracyDonut() {
+            const canvas = document.getElementById('widgetAccuracyDonut');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 45;
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Data
+            const data = [
+                { label: 'Accurate Data', value: 97, color: '#10b981' },
+                { label: 'Corrections Needed', value: 3, color: '#ef4444' }
+            ];
+            
+            let currentAngle = -Math.PI / 2;
+            
+            data.forEach(segment => {
+                const sliceAngle = (segment.value / 100) * 2 * Math.PI;
+                
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle);
+                ctx.closePath();
+                ctx.fillStyle = segment.color;
+                ctx.fill();
+                
+                currentAngle += sliceAngle;
+            });
+            
+            // Center circle (to make it a donut)
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 30, 0, 2 * Math.PI);
+            ctx.fillStyle = '#1a1f36';
+            ctx.fill();
+            
+            // Center text
+            ctx.fillStyle = 'white';
+            ctx.font = '16px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('97%', centerX, centerY - 3);
+            ctx.font = '10px sans-serif';
+            ctx.fillStyle = '#9ca3af';
+            ctx.fillText('Data Accuracy', centerX, centerY + 12);
+        }
+        
+        // Initialize charts after DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            createTrendsChart();
+            createDistributionChart();
+            createAccuracyDonutChart();
+            createWidgetAccuracyDonut();
+        });
+    </script>
+</body>
+</html>

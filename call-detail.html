@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCF KYC Call Analysis - Call Detail</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #1a1f36;
+            color: white;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background-color: #151828;
+            padding: 20px 0;
+            border-right: 1px solid #2a2f45;
+        }
+
+        .logo {
+            padding: 0 20px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #64b5f6;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #2a2f45;
+            color: white;
+        }
+
+        .nav-item.active {
+            border-right: 3px solid #64b5f6;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: #1a1f36;
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .breadcrumb {
+            display: flex;
+            align-items: center;
+            color: #9ca3af;
+            font-size: 14px;
+        }
+
+        .breadcrumb a {
+            color: #64b5f6;
+            text-decoration: none;
+        }
+
+        .breadcrumb-separator {
+            margin: 0 8px;
+        }
+
+        .top-bar-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .action-btn {
+            background-color: #374151;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .action-btn.primary {
+            background-color: #64b5f6;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 24px;
+            flex: 1;
+        }
+
+        /* Call Header */
+        .call-header {
+            background-color: #252a41;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #2a2f45;
+        }
+
+        .call-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 8px;
+        }
+
+        .call-meta {
+            display: flex;
+            gap: 24px;
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .meta-icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+
+        /* Quick Metrics */
+        .quick-metrics {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+        }
+
+        .metric-card {
+            background-color: #1e2139;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+
+        .metric-success { color: #10b981; }
+        .metric-warning { color: #f59e0b; }
+        .metric-danger { color: #ef4444; }
+        .metric-info { color: #64b5f6; }
+
+        /* Tabs */
+        .tabs-container {
+            margin-bottom: 24px;
+        }
+
+        .tabs-header {
+            display: flex;
+            background-color: #252a41;
+            border-radius: 12px 12px 0 0;
+            border: 1px solid #2a2f45;
+            border-bottom: none;
+        }
+
+        .tab-button {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            padding: 16px 24px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-bottom: 2px solid transparent;
+        }
+
+        .tab-button.active {
+            color: white;
+            border-bottom-color: #64b5f6;
+            background-color: #2a2f45;
+        }
+
+        .tab-content {
+            background-color: #252a41;
+            border: 1px solid #2a2f45;
+            border-radius: 0 0 12px 12px;
+            padding: 24px;
+        }
+
+        .tab-panel {
+            display: none;
+        }
+
+        .tab-panel.active {
+            display: block;
+        }
+
+        /* Compliance Analysis */
+        .compliance-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .compliance-section {
+            background-color: #1e2139;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .compliance-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .compliance-items {
+            space: 8px;
+        }
+
+        .compliance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #2a2f45;
+            font-size: 13px;
+        }
+
+        .compliance-item:last-child {
+            border-bottom: none;
+        }
+
+        .compliance-status {
+            font-weight: 600;
+        }
+
+        /* Transcription */
+        .transcription-container {
+            max-height: 600px;
+            overflow-y: auto;
+            background-color: #1e2139;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .transcript-entry {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid #2a2f45;
+        }
+
+        .transcript-entry:last-child {
+            border-bottom: none;
+        }
+
+        .transcript-speaker {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .speaker-label {
+            font-weight: 600;
+            color: white;
+            font-size: 14px;
+        }
+
+        .timestamp {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        .transcript-text {
+            color: #d1d5db;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .rm-speaker { color: #64b5f6; }
+        .customer-speaker { color: #10b981; }
+
+        /* Sentiment Analysis */
+        .sentiment-overview {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .sentiment-card {
+            background-color: #1e2139;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .sentiment-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 16px;
+        }
+
+        .sentiment-score {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .sentiment-positive { color: #10b981; }
+        .sentiment-neutral { color: #f59e0b; }
+        .sentiment-negative { color: #ef4444; }
+
+        .sentiment-label {
+            color: #9ca3af;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .sentiment-breakdown {
+            display: flex;
+            gap: 12px;
+        }
+
+        .sentiment-bar {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background-color: #374151;
+        }
+
+        .sentiment-bar.positive {
+            background-color: #10b981;
+        }
+
+        .sentiment-bar.neutral {
+            background-color: #f59e0b;
+        }
+
+        .sentiment-bar.negative {
+            background-color: #ef4444;
+        }
+
+        /* Key Moments */
+        .key-moments {
+            background-color: #1e2139;
+            border-radius: 8px;
+            padding: 20px;
+        }
+
+        .moment-item {
+            display: flex;
+            gap: 12px;
+            padding: 12px;
+            background-color: #252a41;
+            border-radius: 6px;
+            margin-bottom: 12px;
+        }
+
+        .moment-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .moment-content {
+            flex: 1;
+        }
+
+        .moment-title {
+            font-weight: 600;
+            color: white;
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .moment-description {
+            color: #9ca3af;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .moment-timestamp {
+            color: #64b5f6;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .compliance-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .sentiment-overview {
+                grid-template-columns: 1fr;
+            }
+            
+            .quick-metrics {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .quick-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .tabs-header {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">TCF Analytics</div>
+        <nav>
+            <a href="kyc-overview-mockup.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+                Overview
+            </a>
+            <a href="kyc-calls-mockup.html" class="nav-item active">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7 4a3 3 0 616 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 715 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"/>
+                </svg>
+                Calls
+            </a>
+            <a href="kyc-relationship-managers-mockup.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 616 0zM17 6a3 3 0 11-6 0 3 3 0 616 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 715 5v1H1v-1a5 5 0 715-5z"/>
+                </svg>
+                Relationship Managers
+            </a>
+            <a href="#" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"/>
+                </svg>
+                Feedback
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="breadcrumb">
+                <a href="kyc-calls-mockup.html">Calls</a>
+                <span class="breadcrumb-separator">›</span>
+                <span>TCF Verification - Lodha Developer Project</span>
+            </div>
+            <div class="top-bar-actions">
+                <button class="action-btn">Download Audio</button>
+                <button class="action-btn">Export Report</button>
+                <button class="action-btn primary">Mark for Review</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Call Header -->
+            <div class="call-header">
+                <h1 class="call-title">TCF Verification - Lodha Developer Project Discussion in Jogeshwari</h1>
+                <div class="call-meta">
+                    <div class="meta-item">
+                        <svg class="meta-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                        </svg>
+                        Sep 18, 2025, 11:49 AM
+                    </div>
+                    <div class="meta-item">
+                        <svg class="meta-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M9 6a3 3 0 11-6 0 3 3 0 616 0zM17 6a3 3 0 11-6 0 3 3 0 616 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 715 5v1H1v-1a5 5 0 715-5z"/>
+                        </svg>
+                        Rahul Nair Kalasam (SQY37258)
+                    </div>
+                    <div class="meta-item">
+                        <svg class="meta-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3z"/>
+                        </svg>
+                        Priya Sharma (RM)
+                    </div>
+                    <div class="meta-item">
+                        <svg class="meta-icon" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                        </svg>
+                        Duration: 12.4 minutes
+                    </div>
+                </div>
+
+                <!-- Quick Metrics -->
+                <div class="quick-metrics">
+                    <div class="metric-card">
+                        <div class="metric-value metric-success">96%</div>
+                        <div class="metric-label">Compliance Score</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value metric-success">98%</div>
+                        <div class="metric-label">Data Accuracy</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value metric-success">★★★★★</div>
+                        <div class="metric-label">Customer Rating</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value metric-success">Positive</div>
+                        <div class="metric-label">Sentiment</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-value metric-success">✓</div>
+                        <div class="metric-label">Advisory ACK</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tabs Container -->
+            <div class="tabs-container">
+                <div class="tabs-header">
+                    <button class="tab-button active" onclick="switchTab('compliance')">Compliance Analysis</button>
+                    <button class="tab-button" onclick="switchTab('transcription')">Transcription</button>
+                    <button class="tab-button" onclick="switchTab('sentiment')">Sentiment Analysis</button>
+                </div>
+
+                <div class="tab-content">
+                    <!-- Compliance Analysis Tab -->
+                    <div class="tab-panel active" id="compliance-tab">
+                        <div class="compliance-grid">
+                            <div class="compliance-section">
+                                <h3 class="compliance-title">Identity & Contact Verification</h3>
+                                <div class="compliance-items">
+                                    <div class="compliance-item">
+                                        <span>Identity Confirmation</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Phone Number Verification</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Email Address Verification</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Current Address Confirmation</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>DOB Verification</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="compliance-section">
+                                <h3 class="compliance-title">Property & Financial Details</h3>
+                                <div class="compliance-items">
+                                    <div class="compliance-item">
+                                        <span>Property Identification</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Unit Area Verification</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Cost Breakdown Verification</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Payment History Review</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>GST & TDS Explanation</span>
+                                        <span class="compliance-status metric-warning">⚠ Partial</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="compliance-section">
+                                <h3 class="compliance-title">Regulatory Compliance</h3>
+                                <div class="compliance-items">
+                                    <div class="compliance-item">
+                                        <span>RERA Compliance Check</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>AML Source of Funds</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Sales Commitment Documentation</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Recording Consent</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Advisory Mail Acknowledgment</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Key Issues Identified -->
+                        <div class="compliance-section" style="margin-top: 24px;">
+                            <h3 class="compliance-title">Key Issues & Recommendations</h3>
+                            <div class="key-moments">
+                                <div class="moment-item">
+                                    <svg class="moment-icon" viewBox="0 0 20 20" fill="#f59e0b">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"/>
+                                    </svg>
+                                    <div class="moment-content">
+                                        <div class="moment-title">Incomplete TDS Explanation</div>
+                                        <div class="moment-description">Customer showed confusion about TDS implications. RM provided basic explanation but could have been more thorough about tax filing process.</div>
+                                        <div class="moment-timestamp">08:23</div>
+                                    </div>
+                                </div>
+                                <div class="moment-item">
+                                    <svg class="moment-icon" viewBox="0 0 20 20" fill="#10b981">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                                    </svg>
+                                    <div class="moment-content">
+                                        <div class="moment-title">Excellent Customer Patience</div>
+                                        <div class="moment-description">RM demonstrated exceptional patience when customer needed time to retrieve cost sheet documents, maintaining professional tone throughout.</div>
+                                        <div class="moment-timestamp">05:45 - 06:52</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transcription Tab -->
+                    <div class="tab-panel" id="transcription-tab">
+                        <div class="transcription-container">
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label rm-speaker">RM (Priya Sharma)</span>
+                                    <span class="timestamp">11:49:12</span>
+                                </div>
+                                <div class="transcript-text">Hello, am I speaking with Mr. Rahul Nair Kalasam?</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label customer-speaker">Customer</span>
+                                    <span class="timestamp">11:49:15</span>
+                                </div>
+                                <div class="transcript-text">Yes, this is Rahul speaking.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label rm-speaker">RM (Priya Sharma)</span>
+                                    <span class="timestamp">11:49:17</span>
+                                </div>
+                                <div class="transcript-text">Good morning, Rahul. This is Priya from Square Yards. I'm calling regarding your property investment inquiry for the new Lodha project in Jogeshwari West. Please note this call is being recorded for quality assurance and regulatory compliance. Do you consent to proceed?</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label customer-speaker">Customer</span>
+                                    <span class="timestamp">11:49:28</span>
+                                </div>
+                                <div class="transcript-text">Yes, that's fine. Go ahead.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label rm-speaker">RM (Priya Sharma)</span>
+                                    <span class="timestamp">11:49:31</span>
+                                </div>
+                                <div class="transcript-text">Thank you for your consent. I wanted to tell you about this exciting new residential launch by Lodha Developers in Jogeshwari West, specifically at SV Road. It's a premium development on a 3.5-acre freehold land parcel.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label customer-speaker">Customer</span>
+                                    <span class="timestamp">11:49:45</span>
+                                </div>
+                                <div class="transcript-text">Okay, what are the unit configurations available?</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label rm-speaker">RM (Priya Sharma)</span>
+                                    <span class="timestamp">11:49:48</span>
+                                </div>
+                                <div class="transcript-text">We have 2BHK and 3BHK units ranging from 1150 to 1450 square feet with balconies. The 2BHK units start from 950 square feet as per RERA carpet area with balcony. The pricing ranges between 9.5 and 10.5 crores.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label customer-speaker">Customer</span>
+                                    <span class="timestamp">11:50:05</span>
+                                </div>
+                                <div class="transcript-text">That's quite expensive. I'm already paying around 800-700 per square foot per month in taxes for my current Lodha Bel Air property, which is similar to a 2BHK unit.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label rm-speaker">RM (Priya Sharma)</span>
+                                    <span class="timestamp">11:50:18</span>
+                                </div>
+                                <div class="transcript-text">I understand your concern about the pricing. Let me clarify the maintenance charge structure for you. Since you're an existing Lodha customer, you'll get priority for unit selection. Also, we're currently in the pre-launch phase, so there are special offers available.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label customer-speaker">Customer</span>
+                                    <span class="timestamp">11:50:35</span>
+                                </div>
+                                <div class="transcript-text">Can you send me the detailed information via WhatsApp? I'd like to review the EOI amounts and project timeline before making any decision.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label rm-speaker">RM (Priya Sharma)</span>
+                                    <span class="timestamp">11:50:43</span>
+                                </div>
+                                <div class="transcript-text">Absolutely! I'll send you comprehensive details including the floor plans, pricing, payment schedule, and project timeline via WhatsApp right after this call. The EOI amount and possession timeline will be clearly mentioned.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label customer-speaker">Customer</span>
+                                    <span class="timestamp">11:50:58</span>
+                                </div>
+                                <div class="transcript-text">That sounds good. What about the project completion timeline?</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label rm-speaker">RM (Priya Sharma)</span>
+                                    <span class="timestamp">11:51:02</span>
+                                </div>
+                                <div class="transcript-text">The project is scheduled for completion in 48 months from the launch date. Given Lodha's track record, they typically deliver on time. I'll include detailed construction milestones in the information I send you.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label customer-speaker">Customer</span>
+                                    <span class="timestamp">11:51:15</span>
+                                </div>
+                                <div class="transcript-text">Alright, please send me the details. I'll review and get back to you if interested.</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label rm-speaker">RM (Priya Sharma)</span>
+                                    <span class="timestamp">11:51:22</span>
+                                </div>
+                                <div class="transcript-text">Perfect! I'll send you all the information within the next 30 minutes. Thank you for your time, Rahul. Have a great day!</div>
+                            </div>
+
+                            <div class="transcript-entry">
+                                <div class="transcript-speaker">
+                                    <span class="speaker-label customer-speaker">Customer</span>
+                                    <span class="timestamp">11:51:29</span>
+                                </div>
+                                <div class="transcript-text">Thank you, Priya. Have a good day!</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Sentiment Analysis Tab -->
+                    <div class="tab-panel" id="sentiment-tab">
+                        <div class="sentiment-overview">
+                            <div class="sentiment-card">
+                                <h3 class="sentiment-title">Overall Call Sentiment</h3>
+                                <div class="sentiment-score sentiment-positive">8.4</div>
+                                <div class="sentiment-label">Positive Interaction</div>
+                                <div class="sentiment-breakdown">
+                                    <div class="sentiment-bar positive" style="flex: 0.75;"></div>
+                                    <div class="sentiment-bar neutral" style="flex: 0.2;"></div>
+                                    <div class="sentiment-bar negative" style="flex: 0.05;"></div>
+                                </div>
+                                <div style="margin-top: 12px; font-size: 12px; color: #9ca3af;">
+                                    75% Positive • 20% Neutral • 5% Negative
+                                </div>
+                            </div>
+
+                            <div class="sentiment-card">
+                                <h3 class="sentiment-title">Customer Satisfaction</h3>
+                                <div class="sentiment-score sentiment-positive">9.1</div>
+                                <div class="sentiment-label">Highly Satisfied</div>
+                                <div style="margin-top: 16px; font-size: 13px; color: #d1d5db;">
+                                    <div style="margin-bottom: 8px;">✓ Professional communication</div>
+                                    <div style="margin-bottom: 8px;">✓ Clear information provided</div>
+                                    <div style="margin-bottom: 8px;">✓ Prompt follow-up commitment</div>
+                                    <div>✓ Respectful of customer's time</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Sentiment Timeline -->
+                        <div class="sentiment-card" style="margin-bottom: 24px;">
+                            <h3 class="sentiment-title">Sentiment Timeline</h3>
+                            <div style="display: flex; gap: 4px; margin-bottom: 16px; height: 40px; align-items: end;">
+                                <div style="background-color: #10b981; width: 20px; height: 35px; border-radius: 2px;"></div>
+                                <div style="background-color: #10b981; width: 20px; height: 38px; border-radius: 2px;"></div>
+                                <div style="background-color: #f59e0b; width: 20px; height: 25px; border-radius: 2px;"></div>
+                                <div style="background-color: #10b981; width: 20px; height: 32px; border-radius: 2px;"></div>
+                                <div style="background-color: #10b981; width: 20px; height: 40px; border-radius: 2px;"></div>
+                                <div style="background-color: #10b981; width: 20px; height: 37px; border-radius: 2px;"></div>
+                                <div style="background-color: #f59e0b; width: 20px; height: 22px; border-radius: 2px;"></div>
+                                <div style="background-color: #10b981; width: 20px; height: 39px; border-radius: 2px;"></div>
+                                <div style="background-color: #10b981; width: 20px; height: 40px; border-radius: 2px;"></div>
+                                <div style="background-color: #10b981; width: 20px; height: 38px; border-radius: 2px;"></div>
+                            </div>
+                            <div style="font-size: 11px; color: #9ca3af;">
+                                0:00 → 12:24 minutes
+                            </div>
+                        </div>
+
+                        <!-- Key Sentiment Moments -->
+                        <div class="sentiment-card">
+                            <h3 class="sentiment-title">Key Sentiment Moments</h3>
+                            <div class="key-moments">
+                                <div class="moment-item">
+                                    <svg class="moment-icon" viewBox="0 0 20 20" fill="#10b981">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                                    </svg>
+                                    <div class="moment-content">
+                                        <div class="moment-title">Positive Response to Professional Introduction</div>
+                                        <div class="moment-description">Customer immediately consented to recording and showed engagement when RM introduced the project professionally.</div>
+                                        <div class="moment-timestamp">00:31 - 00:45</div>
+                                    </div>
+                                </div>
+
+                                <div class="moment-item">
+                                    <svg class="moment-icon" viewBox="0 0 20 20" fill="#f59e0b">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"/>
+                                    </svg>
+                                    <div class="moment-content">
+                                        <div class="moment-title">Price Concern Expressed</div>
+                                        <div class="moment-description">Customer showed hesitation about pricing by comparing with current property expenses. RM handled this well by emphasizing benefits.</div>
+                                        <div class="moment-timestamp">02:05 - 02:35</div>
+                                    </div>
+                                </div>
+
+                                <div class="moment-item">
+                                    <svg class="moment-icon" viewBox="0 0 20 20" fill="#10b981">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"/>
+                                    </svg>
+                                    <div class="moment-content">
+                                        <div class="moment-title">High Satisfaction with Service Commitment</div>
+                                        <div class="moment-description">Customer expressed satisfaction when RM promised to send detailed information via WhatsApp with specific timeline.</div>
+                                        <div class="moment-timestamp">10:43 - 11:22</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tabName) {
+            // Hide all tab panels
+            const panels = document.querySelectorAll('.tab-panel');
+            panels.forEach(panel => panel.classList.remove('active'));
+            
+            // Remove active class from all tab buttons
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(button => button.classList.remove('active'));
+            
+            // Show selected tab panel
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // Add active class to selected tab button
+            event.target.classList.add('active');
+        }
+    </script>
+</body>
+</html>

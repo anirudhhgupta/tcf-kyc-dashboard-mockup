@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TCF KYC Analytics - Calls</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #1a1f36;
+            color: white;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            background-color: #151828;
+            padding: 20px 0;
+            border-right: 1px solid #2a2f45;
+        }
+
+        .logo {
+            padding: 0 20px 30px;
+            font-size: 18px;
+            font-weight: 600;
+            color: #64b5f6;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: #9ca3af;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background-color: #2a2f45;
+            color: white;
+        }
+
+        .nav-item.active {
+            border-right: 3px solid #64b5f6;
+        }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .top-bar {
+            background-color: #1a1f36;
+            padding: 16px 24px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .top-bar-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .search-container {
+            position: relative;
+        }
+
+        .search-input {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 12px 8px 36px;
+            color: white;
+            width: 300px;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+        }
+
+        .employee-selector {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+        }
+
+        .top-bar-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .date-picker {
+            background-color: #2a2f45;
+            border: 1px solid #374151;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+        }
+
+        .reset-btn, .filter-btn {
+            background-color: #64b5f6;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 16px;
+            color: white;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .filter-btn {
+            background-color: #374151;
+            margin-left: 8px;
+        }
+
+        /* Content Area */
+        .content-area {
+            padding: 24px;
+            flex: 1;
+        }
+
+        /* Calls Container */
+        .calls-container {
+            background-color: #252a41;
+            border-radius: 12px;
+            border: 1px solid #2a2f45;
+            overflow: hidden;
+        }
+
+        .calls-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #2a2f45;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .calls-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .calls-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Call Item */
+        .call-item {
+            padding: 20px 24px;
+            border-bottom: 1px solid #2a2f45;
+            transition: background-color 0.2s;
+            cursor: pointer;
+        }
+
+        .call-item:hover {
+            background-color: #1e2139;
+        }
+
+        .call-item:last-child {
+            border-bottom: none;
+        }
+
+        .call-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .call-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 4px;
+        }
+
+        .call-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        .call-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .call-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .status-success { background-color: #10b981; }
+        .status-warning { background-color: #f59e0b; }
+        .status-danger { background-color: #ef4444; }
+        .status-info { background-color: #64b5f6; }
+
+        /* Call Metrics */
+        .call-metrics {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+
+        .metric-card {
+            background-color: #1e2139;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .metric-label {
+            font-size: 10px;
+            color: #9ca3af;
+            text-transform: uppercase;
+        }
+
+        .metric-success { color: #10b981; }
+        .metric-warning { color: #f59e0b; }
+        .metric-danger { color: #ef4444; }
+        .metric-info { color: #64b5f6; }
+
+        /* Keywords */
+        .call-keywords {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            margin-bottom: 12px;
+        }
+
+        .keyword-tag {
+            background-color: #374151;
+            color: #9ca3af;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            text-transform: uppercase;
+        }
+
+        .keyword-success { background-color: #065f46; color: #10b981; }
+        .keyword-warning { background-color: #78350f; color: #f59e0b; }
+        .keyword-danger { background-color: #7f1d1d; color: #ef4444; }
+
+        /* Expanded Call Details */
+        .call-details {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid #2a2f45;
+        }
+
+        .call-details.expanded {
+            display: block;
+        }
+
+        .details-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .details-section {
+            background-color: #1a1f36;
+            border-radius: 8px;
+            padding: 16px;
+        }
+
+        .details-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .compliance-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .compliance-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            background-color: #252a41;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .compliance-status {
+            font-weight: 600;
+        }
+
+        /* Key Points */
+        .key-points {
+            list-style: none;
+        }
+
+        .key-points li {
+            padding: 6px 0;
+            padding-left: 16px;
+            position: relative;
+            font-size: 12px;
+            color: #d1d5db;
+        }
+
+        .key-points li::before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #64b5f6;
+        }
+
+        /* Customer Information */
+        .customer-info {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px 0;
+            font-size: 12px;
+            border-bottom: 1px solid #2a2f45;
+        }
+
+        .info-label {
+            color: #9ca3af;
+        }
+
+        .info-value {
+            color: white;
+            font-weight: 500;
+        }
+
+        /* Pagination */
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 24px;
+        }
+
+        .pagination-btn {
+            background-color: #374151;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            color: white;
+            cursor: pointer;
+            font-size: 12px;
+        }
+
+        .pagination-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .pagination-info {
+            color: #9ca3af;
+            font-size: 12px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .call-metrics {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .details-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .call-metrics {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="logo">TCF Analytics</div>
+        <nav>
+            <a href="kyc-overview-mockup.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z"/>
+                </svg>
+                Overview
+            </a>
+            <a href="#" class="nav-item active">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M7 4a3 3 0 016 0v4a3 3 0 11-6 0V4zm4 10.93A7.001 7.001 0 0017 8a1 1 0 10-2 0A5 5 0 015 8a1 1 0 00-2 0 7.001 7.001 0 006 6.93V17H6a1 1 0 100 2h8a1 1 0 100-2h-3v-2.07z"/>
+                </svg>
+                Calls
+            </a>
+            <a href="kyc-relationship-managers-mockup.html" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                </svg>
+                Relationship Managers
+            </a>
+            <a href="#" class="nav-item">
+                <svg class="nav-icon" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z"/>
+                </svg>
+                Feedback
+            </a>
+        </nav>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+            <div class="top-bar-left">
+                <div class="search-container">
+                    <svg class="search-icon" width="16" height="16" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z"/>
+                    </svg>
+                    <input type="text" class="search-input" placeholder="Search KYC call transcripts...">
+                </div>
+                <select class="employee-selector">
+                    <option>426 employees selected</option>
+                    <option>All RMs</option>
+                    <option>Top Performers</option>
+                    <option>New RMs</option>
+                </select>
+            </div>
+            <div class="top-bar-right">
+                <span style="color: #9ca3af; font-size: 12px;">Start Date</span>
+                <input type="date" class="date-picker" value="2025-08-18">
+                <span style="color: #9ca3af; font-size: 12px;">End Date</span>
+                <input type="date" class="date-picker" value="2025-09-17">
+                <button class="reset-btn">RESET</button>
+                <button class="filter-btn">FILTER</button>
+            </div>
+        </div>
+
+        <!-- Content Area -->
+        <div class="content-area">
+            <!-- Calls Container -->
+            <div class="calls-container">
+                <div class="calls-header">
+                    <h2 class="calls-title">TCF KYC Call Records</h2>
+                    <div class="calls-controls">
+                        <select style="background-color: #374151; border: 1px solid #4b5563; border-radius: 6px; padding: 6px 12px; color: white; font-size: 12px;">
+                            <option>Sort by: Latest</option>
+                            <option>Sort by: Compliance Score</option>
+                            <option>Sort by: Duration</option>
+                            <option>Sort by: Customer Rating</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Call Item 1 -->
+                <div class="call-item" onclick="window.location.href='call-detail.html'" style="cursor: pointer;">
+                    <div class="call-header">
+                        <div>
+                            <div class="call-title">TCF Verification - Lodha Developer Project Discussion in Jogeshwari</div>
+                            <div class="call-meta">
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                                    </svg>
+                                    Sep 18, 2025, 11:49 AM
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                    </svg>
+                                    Customer: Unknown Property Inquiry in Lodha | Rahul Nair Kalasam (TG) (SQY37258)
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                                    </svg>
+                                    Location: Jogeshwari
+                                </div>
+                            </div>
+                        </div>
+                        <div class="call-status">
+                            <div class="status-indicator status-success"></div>
+                            <span style="color: #10b981; font-size: 12px; font-weight: 600;">COMPLETED</span>
+                        </div>
+                    </div>
+
+                    <div class="call-metrics">
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">96%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">98%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">★★★★★</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-info">12.4 min</div>
+                            <div class="metric-label">Duration</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">✓</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                    </div>
+
+                    <div class="call-keywords">
+                        <span class="keyword-tag keyword-success">Multi-unit</span>
+                        <span class="keyword-tag keyword-success">Compliance-100%</span>
+                        <span class="keyword-tag keyword-success">Advisory-acknowledged</span>
+                        <span class="keyword-tag">Builder-timeline-discussed</span>
+                        <span class="keyword-tag">Extended-call</span>
+                    </div>
+
+                    <div class="call-details" id="call1">
+                        <div class="details-grid">
+                            <div class="details-section">
+                                <h4 class="details-title">Compliance Breakdown</h4>
+                                <div class="compliance-grid">
+                                    <div class="compliance-item">
+                                        <span>Identity Verification</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Contact Verification</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Property Details</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Financial Verification</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>RERA Compliance</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                    <div class="compliance-item">
+                                        <span>Advisory Mail Process</span>
+                                        <span class="compliance-status metric-success">✓ Complete</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="details-section">
+                                <h4 class="details-title">Key Discussion Points</h4>
+                                <ul class="key-points">
+                                    <li>RM initiated a call to the customer regarding a new residential launch by Lodha Developers in Jogeshwari West, specifically at SV Road.</li>
+                                    <li>Project details: 3.5-acre freehold land parcel with balcony, costing between 9.5 and 10.5 CR, with 2BHK/3BHK units ranging from 1150 to 1450 sq ft.</li>
+                                    <li>2BHK units start from 950 sq ft as per RERA carpet with balcony, with pre-launch phase offers.</li>
+                                    <li>Customer asked about details of the property to be sent via WhatsApp with information about EOI amounts.</li>
+                                    <li>RM mentioned that existing Lodha customers get priority for unit selection.</li>
+                                    <li>Customer expressed hesitation about high pricing, citing that his taxes in Lodha Bel Air are similar to 2BHK units (₹800-700 sq ft per month).</li>
+                                    <li>RM clarified the maintenance charges structure and project timeline.</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="details-grid" style="margin-top: 16px;">
+                            <div class="details-section">
+                                <h4 class="details-title">Customer Information</h4>
+                                <div class="customer-info">
+                                    <div class="info-item">
+                                        <span class="info-label">Customer Name:</span>
+                                        <span class="info-value">Rahul Nair Kalasam</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Customer ID:</span>
+                                        <span class="info-value">SQY37258</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Property Interest:</span>
+                                        <span class="info-value">Lodha Jogeshwari</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Budget Range:</span>
+                                        <span class="info-value">9.5-10.5 CR</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Unit Preference:</span>
+                                        <span class="info-value">2BHK/3BHK</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">Current Status:</span>
+                                        <span class="info-value">Existing Lodha Customer</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="details-section">
+                                <h4 class="details-title">Sales Commitments Documented</h4>
+                                <ul class="key-points">
+                                    <li>Priority unit selection for existing Lodha customers confirmed and documented</li>
+                                    <li>Pre-launch pricing offers explained and recorded</li>
+                                    <li>WhatsApp information sharing commitment documented</li>
+                                    <li>Maintenance charge structure clarification provided</li>
+                                    <li>Project timeline information shared and acknowledged</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Call Item 2 -->
+                <div class="call-item" onclick="toggleCallDetails('call2')">
+                    <div class="call-header">
+                        <div>
+                            <div class="call-title">TCF Verification - Data Discrepancy Resolution</div>
+                            <div class="call-meta">
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                                    </svg>
+                                    Sep 17, 2025, 2:30 PM
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                    </svg>
+                                    Customer: Darsh Bipin Shah (TG) (SQY49051)
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                                    </svg>
+                                    RM: Priya Sharma
+                                </div>
+                            </div>
+                        </div>
+                        <div class="call-status">
+                            <div class="status-indicator status-warning"></div>
+                            <span style="color: #f59e0b; font-size: 12px; font-weight: 600;">DATA CORRECTION</span>
+                        </div>
+                    </div>
+
+                    <div class="call-metrics">
+                        <div class="metric-card">
+                            <div class="metric-value metric-warning">88%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-warning">92%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">★★★★☆</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-info">6.3 min</div>
+                            <div class="metric-label">Duration</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-warning">Pending</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                    </div>
+
+                    <div class="call-keywords">
+                        <span class="keyword-tag keyword-warning">DOB-mismatch</span>
+                        <span class="keyword-tag keyword-warning">Manual-correction</span>
+                        <span class="keyword-tag keyword-warning">Verification-pending</span>
+                        <span class="keyword-tag">Follow-up-required</span>
+                    </div>
+
+                    <div class="call-details" id="call2">
+                        <div class="details-grid">
+                            <div class="details-section">
+                                <h4 class="details-title">Issues Identified</h4>
+                                <ul class="key-points">
+                                    <li>Date of Birth mismatch between system records and customer-provided information</li>
+                                    <li>Email address spelling discrepancy requiring letter-by-letter correction</li>
+                                    <li>Advisory mail acknowledgment still pending from customer</li>
+                                    <li>Manual data entry required for DOB correction</li>
+                                </ul>
+                            </div>
+                            <div class="details-section">
+                                <h4 class="details-title">Resolution Actions</h4>
+                                <ul class="key-points">
+                                    <li>Customer confirmed correct DOB: 15th March 1985 (was recorded as 15th May 1985)</li>
+                                    <li>Email corrected from darsh.shah@email.com to darsh.bipin.shah@email.com</li>
+                                    <li>Follow-up scheduled within 24 hours for advisory mail acknowledgment</li>
+                                    <li>Data accuracy team notified for system updates</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Call Item 3 -->
+                <div class="call-item" onclick="toggleCallDetails('call3')">
+                    <div class="call-header">
+                        <div>
+                            <div class="call-title">Extended TCF Call - Builder Timeline & Penalty Discussion</div>
+                            <div class="call-meta">
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                                    </svg>
+                                    Sep 16, 2025, 4:15 PM
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                    </svg>
+                                    Customer: Ravi Kumar (MH) (SQY51234)
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                                    </svg>
+                                    RM: Arun Patel
+                                </div>
+                            </div>
+                        </div>
+                        <div class="call-status">
+                            <div class="status-indicator status-success"></div>
+                            <span style="color: #10b981; font-size: 12px; font-weight: 600;">COMPLETED</span>
+                        </div>
+                    </div>
+
+                    <div class="call-metrics">
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">94%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">97%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">★★★★★</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-warning">18.3 min</div>
+                            <div class="metric-label">Duration</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">✓</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                    </div>
+
+                    <div class="call-keywords">
+                        <span class="keyword-tag">Extended-call</span>
+                        <span class="keyword-tag">Builder-timeline</span>
+                        <span class="keyword-tag keyword-success">Customer-satisfaction</span>
+                        <span class="keyword-tag">EMI-discussion</span>
+                        <span class="keyword-tag">Cross-sell-opportunity</span>
+                    </div>
+
+                    <div class="call-details" id="call3">
+                        <div class="details-grid">
+                            <div class="details-section">
+                                <h4 class="details-title">Extended Call Reasons</h4>
+                                <ul class="key-points">
+                                    <li>Customer needed time to retrieve cost sheet documents (~1 minute wait)</li>
+                                    <li>Extensive discussion about builder timeline and potential penalties</li>
+                                    <li>Customer expressed concerns about EMI implications due to project delays</li>
+                                    <li>Detailed explanation of BBA (Buyer-Builder Agreement) terms required</li>
+                                    <li>Cross-selling opportunity: Home loan discussion (Urban Money)</li>
+                                </ul>
+                            </div>
+                            <div class="details-section">
+                                <h4 class="details-title">Outcomes Achieved</h4>
+                                <ul class="key-points">
+                                    <li>Customer frustration successfully resolved through patient explanation</li>
+                                    <li>Builder timeline clarity provided with realistic expectations</li>
+                                    <li>Home loan interest expressed - follow-up scheduled with Urban Money team</li>
+                                    <li>Advisory mail acknowledged and customer satisfaction achieved</li>
+                                    <li>Complete transparency provided about penalty terms</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Call Item 4 -->
+                <div class="call-item" onclick="toggleCallDetails('call4')">
+                    <div class="call-header">
+                        <div>
+                            <div class="call-title">TCF Verification - Language Switch Success</div>
+                            <div class="call-meta">
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                                    </svg>
+                                    Sep 15, 2025, 10:20 AM
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                    </svg>
+                                    Customer: Suresh Patel (GJ) (SQY44789)
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                                    </svg>
+                                    RM: Kavita Shah
+                                </div>
+                            </div>
+                        </div>
+                        <div class="call-status">
+                            <div class="status-indicator status-success"></div>
+                            <span style="color: #10b981; font-size: 12px; font-weight: 600;">COMPLETED</span>
+                        </div>
+                    </div>
+
+                    <div class="call-metrics">
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">95%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">99%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">★★★★★</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-info">7.2 min</div>
+                            <div class="metric-label">Duration</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">✓</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                    </div>
+
+                    <div class="call-keywords">
+                        <span class="keyword-tag keyword-success">Language-switch</span>
+                        <span class="keyword-tag keyword-success">Customer-comfort</span>
+                        <span class="keyword-tag keyword-success">Cultural-sensitivity</span>
+                        <span class="keyword-tag">Hindi-English-mix</span>
+                        <span class="keyword-tag">TDS-education</span>
+                    </div>
+
+                    <div class="call-details" id="call4">
+                        <div class="details-grid">
+                            <div class="details-section">
+                                <h4 class="details-title">Cultural Competence Demonstrated</h4>
+                                <ul class="key-points">
+                                    <li>RM successfully identified customer's language preference from initial response</li>
+                                    <li>Seamless transition from English to Hindi mid-conversation</li>
+                                    <li>Code-switching used effectively for technical terms</li>
+                                    <li>Customer comfort level significantly improved after language switch</li>
+                                    <li>Multiple TDS explanations provided patiently in preferred language</li>
+                                </ul>
+                            </div>
+                            <div class="details-section">
+                                <h4 class="details-title">Educational Outcomes</h4>
+                                <ul class="key-points">
+                                    <li>TDS process thoroughly explained in Hindi with English technical terms</li>
+                                    <li>Customer understood tax filing implications for property investment</li>
+                                    <li>CA consultation recommended and contact details provided</li>
+                                    <li>Customer expressed satisfaction with culturally sensitive service</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Call Item 5 -->
+                <div class="call-item" onclick="toggleCallDetails('call5')">
+                    <div class="call-header">
+                        <div>
+                            <div class="call-title">TCF Verification - Advisory Mail Acknowledgment Pending</div>
+                            <div class="call-meta">
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"/>
+                                    </svg>
+                                    Sep 14, 2025, 3:45 PM
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path d="M9 6a3 3 0 11-6 0 3 3 0 016 0zM17 6a3 3 0 11-6 0 3 3 0 016 0zM12.93 17c.046-.327.07-.66.07-1a6.97 6.97 0 00-1.5-4.33A5 5 0 0119 16v1h-6.07zM6 11a5 5 0 015 5v1H1v-1a5 5 0 015-5z"/>
+                                    </svg>
+                                    Customer: Meera Reddy (AP) (SQY55901)
+                                </div>
+                                <div class="call-meta-item">
+                                    <svg width="12" height="12" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+                                    </svg>
+                                    RM: Rajesh Kumar
+                                </div>
+                            </div>
+                        </div>
+                        <div class="call-status">
+                            <div class="status-indicator status-danger"></div>
+                            <span style="color: #ef4444; font-size: 12px; font-weight: 600;">FOLLOW-UP REQUIRED</span>
+                        </div>
+                    </div>
+
+                    <div class="call-metrics">
+                        <div class="metric-card">
+                            <div class="metric-value metric-warning">78%</div>
+                            <div class="metric-label">Compliance</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-success">96%</div>
+                            <div class="metric-label">Data Accuracy</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-warning">★★★☆☆</div>
+                            <div class="metric-label">Customer Rating</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-info">3.3 min</div>
+                            <div class="metric-label">Duration</div>
+                        </div>
+                        <div class="metric-card">
+                            <div class="metric-value metric-danger">✗</div>
+                            <div class="metric-label">Advisory ACK</div>
+                        </div>
+                    </div>
+
+                    <div class="call-keywords">
+                        <span class="keyword-tag keyword-danger">Advisory-pending</span>
+                        <span class="keyword-tag keyword-danger">Follow-up-required</span>
+                        <span class="keyword-tag keyword-danger">Compliance-incomplete</span>
+                        <span class="keyword-tag">Email-issues</span>
+                    </div>
+
+                    <div class="call-details" id="call5">
+                        <div class="details-grid">
+                            <div class="details-section">
+                                <h4 class="details-title">Compliance Gaps</h4>
+                                <ul class="key-points">
+                                    <li>Advisory mail not acknowledged by customer despite multiple reminders</li>
+                                    <li>Customer claims email not received - delivery status to be verified</li>
+                                    <li>Incomplete understanding of three-party relationship (SQY-Builder-Buyer)</li>
+                                    <li>Follow-up call scheduled within 48 hours for resolution</li>
+                                </ul>
+                            </div>
+                            <div class="details-section">
+                                <h4 class="details-title">Next Actions Required</h4>
+                                <ul class="key-points">
+                                    <li>Verify email delivery status and resend advisory mail if needed</li>
+                                    <li>Schedule dedicated call for advisory mail content explanation</li>
+                                    <li>Escalate to compliance team if acknowledgment not received within 48 hours</li>
+                                    <li>Document all follow-up attempts for audit trail</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination">
+                <button class="pagination-btn" disabled>← PREVIOUS</button>
+                <span class="pagination-info">Page 1 of 24 | Showing 5 of 2,847 calls</span>
+                <button class="pagination-btn">NEXT →</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function toggleCallDetails(callId) {
+            const details = document.getElementById(callId);
+            details.classList.toggle('expanded');
+        }
+    </script>
+</body>
+</html>
